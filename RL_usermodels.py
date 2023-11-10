@@ -14,6 +14,7 @@ import itertools
 import matplotlib.pyplot as plt
 import csv
 
+from userModel import *
 
 # TODO how long is an interaction and when to move on?
 # TODO change prob based on pain level
@@ -69,12 +70,28 @@ def state_action_space():
 
 
 def get_next_state(state, states, action, previous_action):
-    # state[0]: current action {0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry}
-    # state[1]: pain presence {0,1}
-    # state[2]: user_interaction {0: none, 1: interaction}
-    # state[3]: previous action {0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry}
-    # state[4]: previous succes 0: no user_interaction, 1: any user_interaction (petting, clapping, shaking)
-
+    '''
+    STATE SPACE
+    state[0]: current action {0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry}
+    state[1]: pain presence {0,1}
+    state[2]: user_interaction {0: none, 1: interaction}
+    state[3]: previous action {0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry}
+    state[4]: previous succes 0: no user_interaction, 1: any user_interaction (petting, clapping, shaking)
+    
+    STATE last 10 seconds
+    
+    At the end of the state, sample pain and interaction and get reward
+    
+    Question:: is current state needed, 
+    '''
+    
+# =============================================================================
+#     state[0] = action
+#     state[1] = pain_model(action, state)
+#     state[2] = user_interaction_model( action, state)
+#     state[3] = previous_action
+#     state[4] = previous success
+# =============================================================================
     next_state = state[:]
 
     # if there is any user_interaction, set previous succes to 1
@@ -82,81 +99,36 @@ def get_next_state(state, states, action, previous_action):
         next_state[4] = 1
     else:
         next_state[4] = 0
+    
+
+# Should we evaluate pain for the next state or for the current state????
+    next_state[0] = action
+    next_state[1] = pain_model(action, state)
+    next_state[2] = user_interaction_model(next_state[1], action, state)
     next_state[3] = previous_action
 
- # RANDOM SIMULATION OF HUMAN ACTIONS
- #TODO make user simulation more complex, e.g. include also previous succes etc. 
-    if action == 0:  # neutral
-        weights_nopain = np.array([0.90, 0.10])
-        weights_pain = np.array([0.95, 0.05])
-        next_state[1], next_state[2] = fakeUserAction(
-            weights_pain, weights_nopain, state)
-
-
-    if action == 1:  # content
-        weights_nopain = np.array([0.8, 0.2])
-        weights_pain = np.array([0.6, 0.4])
-        next_state[1], next_state[2] = fakeUserAction(
-            weights_pain, weights_nopain, state)
-
-    if action == 2:  # happy
-        weights_nopain = np.array([0.1, 0.9])
-        weights_pain= np.array([0.4, 0.6])
-        next_state[1], next_state[2] = fakeUserAction(weights_pain, weights_nopain, state)
-
-    if action == 3:  # surprised
-        weights_nopain = np.array([0.2, 0.8])
-        weights_pain= np.array([0.3, 0.7])
-        next_state[1], next_state[2] = fakeUserAction(weights_pain, weights_nopain, state)
-
-    if action == 4:  # sad
-        weights_nopain = np.array([0.1, 0.9])
-        weights_pain= np.array([0.3, 0.7])
-        next_state[1], next_state[2] = fakeUserAction(weights_pain, weights_nopain, state)
-
-    if action == 5:  # angry
-        weights_nopain = np.array([0.7, 0.3])
-        weights_pain= np.array([0.5, 0.5])
-        next_state[1], next_state[2] = fakeUserAction(weights_pain, weights_nopain, state)
-
-    
 # REWARDS
 # TODO change reward signal to discourage switching to often between behaviours, look at s, s' and a
 # Reward of interaction should be higher then punishment for changing action
 
-    if next_state[2] == 1:
-        reward = 10
-    else:
-        reward = 0
+# using -1 for switching state resulted in a policy that never changed state
 
+    score =0
+    if next_state[2] == 1:
+        score = 10
+    if (action == previous_action and next_state[2] == 1):
+        score += 2
+    elif (action == previous_action and next_state[2] == 0): #ensures that the robot still does some switches in behaviour
+        score -= 1
+    else:
+        score = 0
+
+    reward = score
     return reward, next_state
 
 # define the MDP
 
 
-def fakeUserAction(weights_pain, weights_nopain, state):
-    #    weights = np.array([0.2, 0.2, 0.4, 0.2])
-    if state[0] == 0:  # e.g. if not in pain, transition with 0.1 prob to pain
-        if rnd.random() <= 0.1:
-            pain = 1
-        else:
-            pain = 0
-    else:  # if in pain, transition with 0.20 prob to no pain
-        if rnd.random() <= 0.2:
-            pain = 1
-        else:
-            pain = 0
-
-    # with 0.25 prob transition to another interaction
-    if rnd.random() < 0.25:
-        if pain ==0:
-            interaction = np.random.choice([0, 1, 2, 3], p=weights_pain, size=1)[0]
-        else: 
-            interaction = np.random.choice([0, 1, 2, 3], p=weights_pain, size=1)[0]
-    else:
-        interaction = state[1]
-
-    return pain, interaction
 
 
 class MDP:
@@ -256,36 +228,37 @@ class Learning:
 
 # get state-action space
 states, actions = state_action_space()
-start_state = [0, 0, 0, 0]
+start_state = [0, 0, 0, 0, 0]
 m = MDP(start_state, actions)
 m.states = states
 
-print(states)
 
-alabel = ["neutral/none", "content",  "happy", "surprised", "sad", "angry"]
+alabel = ["neutral", "content",  "happy", "surprised", "sad", "angry"]
 
 # initialize Q-table
 table = Representation('qtable', [m.actlist, m.states])
 Q = np.asarray(table.Q)
+q=False
+
 
 # A Q-table can be written and loaded as a file
 # you can load it like this:
-# if q:
-# ins = open(q,'r')
-# Q = [[float(n) for n in line.split()] for line in ins]
-# ins.close()
-# table.Q = Q
-
+if q:
+    ins = open("q_table",'r')
+    Q = [[float(n) for n in line.split()] for line in ins]
+    ins.close()
+    table.Q = Q
+print(Q)
 # this can change to suit the problem -- number of learning episodes - games
-episodes = 400
+episodes = 50
 episode = 1
 
 # q-values --> q.Q
 egreedy = Policy('egreedy', 1.0, table.Q)
 
-#State transitions happen every # seconds, e.g. every 10 seconds. Then it will check for interactions, pain levels, previous success and update state
+# State transitions happen every # seconds, e.g. every 10 seconds. Then it will check for interactions, pain levels, previous success and update state
 
-alpha = float(0.1)
+alpha = float(0.1) #learning rate
 gamma = float(0.9)
 learning = Learning('sarsa', [alpha, gamma])
 interactions = 50        # this can change to suit the problem -- number of rounds
@@ -294,15 +267,15 @@ errors = []
 returns = []
 
 while (episode < episodes):
-    previous_action = 0  # start with content as "last" action
+    previous_action = 0  # start with neutral as "last" action
     interaction = 1
     done = 0
     state = start_state
-    if (episode % 100 == 0):
+    if (episode % 10 == 0):
         print("Episode: " + str(episode))
     r = 0
     e = 0
-    egreedy.param *= 0.99  # this can change to suit the problem
+    egreedy.param *= 0.0  # this can change to suit the problem
     if egreedy.param < 0.1:
         egreedy.param = 0.0
 
@@ -313,6 +286,8 @@ while (episode < episodes):
         egreedy.Q_state = Q[state_index][:]
 
         action = egreedy.return_action()
+        
+        #wait 10 seconds and evaluate reward and get next state
 
         # or get next state and reward from interaction for online learning
         reward, next_state = get_next_state(
@@ -332,7 +307,7 @@ while (episode < episodes):
         Q[state_index][:], error = learning.update(
             state_index, action, next_state_index, next_action, reward, Q[state_index][:], Q[next_state_index][:], done)
         e += error
-        if (episode % 100 == 0):
+        if (episode % 10 == 0):
             # print ("Episode: " + str(episode))
             print(interaction, state, alabel[action],
                   next_state, reward, egreedy.param)
@@ -351,10 +326,6 @@ def moving_average(a, n=20):
     return ret[n - 1:] / n
 
 
-plt.plot(moving_average(attempts))
-plt.title("Attempts until final state")
-plt.show()
-
 
 plt.plot(moving_average(returns))
 plt.title("Total return")
@@ -368,6 +339,8 @@ print(Q)
 
 # if you want to save the Q-table on a file
 
+# =============================================================================
 # with open('q_table', 'w') as f:
-#    writer = csv.writer(f,delimiter=' ')
-#    writer.writerows(Q)
+#     writer = csv.writer(f,delimiter=' ')
+#     writer.writerows(Q)
+# =============================================================================
