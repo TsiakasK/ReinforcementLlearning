@@ -21,6 +21,7 @@ import itertools
 import matplotlib.pyplot as plt
 import csv
 from multi_userModels import *
+from extended_user_model import *
 
 
 def maxs(seq):
@@ -105,8 +106,8 @@ def get_next_state(state, states, action, previous_action, user_model):
 # Should we evaluate pain for the next state or for the current state????
     next_state[0] = action
     #next_state[1] = pain_model(action, state, user_model)
-    next_state[2] = user_interaction_model(
-        next_state[1], action, state, user_model)
+    next_state[2] = user_interaction_model2(
+        next_state[1], action, state, user_model, previous_action)
     next_state[3] = previous_action
 
 # REWARDS
@@ -235,7 +236,7 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
     # get state-action space
     states, actions = state_action_space()
     # exploring starts, both with and without pain
-    start_pain = 1  #np.random.choice([0, 1])
+    start_pain = 0  #np.random.choice([0, 1])
     start_state = [0, start_pain, 0, 0, 0]
   #  start_state = [0, 1, 0, 0, 0]
 
@@ -281,10 +282,10 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
         previous_action = 0  # start with neutral as "last" action
         interaction = 1
         done = 0
-        start_pain = 1#np.random.choice([0, 1])
+        start_pain = 0#np.random.choice([0, 1])
         state = [0, start_pain, 0, 0, 0]
         # state = start_state
-        if (episode % 50 == 0):
+        if (episode % 499 == 0):
             print("Episode: " + str(episode))
         r = 0
         e = 0
@@ -325,7 +326,7 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
             Q[state_index][:], error = learning.update(
                 state_index, action, next_state_index, next_action, reward, Q[state_index][:], Q[next_state_index][:], done)
             e += error
-            if (episode % 50 == 0):
+            if (episode % 499 == 0):
                 # print ("Episode: " + str(episode))
                 print(interaction, state, alabel[action],
                       next_state, reward, egreedy.param)
@@ -366,10 +367,10 @@ def moving_average(a, n=20):
     return ret[n - 1:] / n
 
 
-run1_returns, run1_errors = simulate(ALPHA=0.1, GAMMA=0.9, num_interactions= 50, egreedy_param=0.97, num_episodes=200, user_model=1)
-run2_returns, run2_errors = simulate(ALPHA=0.1, GAMMA=0.9, num_interactions= 50, egreedy_param=0.97, num_episodes=200, user_model=2)
-run3_returns, run3_errors = simulate(ALPHA=0.1, GAMMA=0.9, num_interactions= 50, egreedy_param=0.97, num_episodes=200, user_model=3)
-run4_returns, run4_errors = simulate(ALPHA=0.1, GAMMA=0.9, num_interactions= 50, egreedy_param=0.97, num_episodes=200, user_model=4)
+run1_returns, run1_errors = simulate(ALPHA=0.1, GAMMA=0.9, num_interactions= 50, egreedy_param=0.97, num_episodes=500, user_model=1)
+run2_returns, run2_errors = simulate(ALPHA=0.1, GAMMA=0.9, num_interactions= 50, egreedy_param=0.97, num_episodes=500, user_model=2)
+run3_returns, run3_errors = simulate(ALPHA=0.1, GAMMA=0.9, num_interactions= 50, egreedy_param=0.97, num_episodes=500, user_model=3)
+run4_returns, run4_errors = simulate(ALPHA=0.1, GAMMA=0.9, num_interactions= 50, egreedy_param=0.97, num_episodes=500, user_model=4)
 
 
 plt.plot(moving_average(run1_returns), 'b', moving_average(run2_returns), 'r', moving_average(run3_returns), 'g', moving_average(run4_returns), 'c')

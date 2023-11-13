@@ -467,10 +467,10 @@ def user_interaction_model2(pain, action, state, user_model, prev_action):
 
     #make it less likely that previous action will succeed if it is the same action and it did not succeed the last time
     #print(prev_action, action)
-    if prev_action == action & state[4] == 0:
-        probability[0] = 0.99#probability[0] + 0.8*probability[1]
-        probability[1] = 0.01#0.2*probability[1]
-     #   print(probability)
+    if prev_action == action and state[4] == 0:
+        probability[0] = probability[0] + 0.8*probability[1]
+        probability[1] = 0.2*probability[1]
+        #print(probability)
 
     interaction = np.random.choice([0, 1], p=probability, size=1)[0]
 
