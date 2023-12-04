@@ -88,6 +88,8 @@ def get_next_state(state, states, action, previous_action, user_model):
     next_state[0] = action
     #next_state[1] = pain_model(action, state, user_model)
     next_state[2] = previous_action
+      
+    d = [action, interaction, state[3], previous_action, state[1]]
 
 # REWARDS
 # TODO change reward signal to discourage switching to often between behaviours, look at s, s' and a
@@ -108,7 +110,7 @@ def get_next_state(state, states, action, previous_action, user_model):
         score = 0
 
     reward = score
-    return reward, next_state
+    return reward, next_state, d
 
 # define the MDP
 
@@ -316,15 +318,19 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
     attempts = []
     errors = []
     returns = []
+    d1= []
 
     while (episode <= episodes):
+        d1=d2=d3=d4=d5= []
         previous_action = 0  # start with neutral as "last" action
         interaction = 1
         done = 0
         state = [0,start_pain, 0, 0]
         # state = start_state
-        if (episode % 1 == 0):
-            print("Episode: " + str(episode))
+# =============================================================================
+#         if (episode % 1 == 0):
+#             print("Episode: " + str(episode))
+# =============================================================================
         r = 0
         e = 0
         egreedy.param = egreedy_param
@@ -348,8 +354,18 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
             # wait 10 seconds and evaluate reward and get next state
 
             # or get next state and reward from interaction for online learning
-            reward, next_state = get_next_state(
+            reward, next_state, d = get_next_state(
                 state, states, action, previous_action, user_model)
+            if user_model==1:
+                d1.append(d)
+            elif user_model==2:
+                d2.append(d)
+            elif user_model==3:
+                d3.append(d)
+            elif user_model==4:
+                d4.append(d)
+            elif user_model ==5:
+                d5.append(d)
             next_state_index = states.index(tuple(next_state))
             r += (learning.gamma**(interaction-1))*reward
 
@@ -365,10 +381,12 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
             Q[state_index][:], error = learning.update(
                 state_index, action, next_state_index, next_action, reward, Q[state_index][:], Q[next_state_index][:], done)
             e += error
-            if (interaction % 1  == 0):
-                # print ("Episode: " + str(episode))
-                print(interaction, state, alabel[action],
-                      next_state, reward, egreedy.param, alpha)
+# =============================================================================
+#             if (interaction % 1  == 0):
+#                 # print ("Episode: " + str(episode))
+#                 print(interaction, state, alabel[action],
+#                       next_state, reward, egreedy.param, alpha)
+# =============================================================================
             state = next_state
             previous_action = action
             interaction += 1
@@ -385,7 +403,26 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
                     egreedy.param = 0.0
 
         episode += 1
-
+        if user_model==1:
+            with open('interactions_um1_episodes.csv', 'a', newline='') as f:
+                         writer = csv.writer(f, delimiter=',')
+                         writer.writerow(d1)
+        elif user_model==2:
+           with open('interactions_um2_episodes.csv', 'a', newline='') as f:
+                        writer = csv.writer(f, delimiter=',')
+                        writer.writerow(d2)
+        elif user_model==3:
+           with open('interactions_um3_episodes.csv', 'a', newline='') as f:
+                        writer = csv.writer(f, delimiter=',')
+                        writer.writerow(d3)
+        elif user_model==4:
+           with open('interactions_um4_episodes.csv', 'a', newline='') as f:
+                        writer = csv.writer(f, delimiter=',')
+                        writer.writerow(d4)
+        elif user_model==5:
+            with open('interactions_um5_episodes.csv', 'a', newline='') as f:
+                         writer = csv.writer(f, delimiter=',')
+                         writer.writerow(d5)
 
     return returns, errors
 
@@ -403,16 +440,22 @@ eg_param=0.1
 num_eps= 1
 
 run1_returns, run1_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um1")
-run2_returns, run2_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um2")
-run3_returns, run3_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um3")
-run4_returns, run4_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um4")
 
-plt.plot(moving_average(run1_returns), 'b', moving_average(run2_returns), 'r', moving_average(run3_returns), 'g', moving_average(run4_returns), 'c')
-plt.legend(['base model 1', 'base model 2', 'base model 3','base model 4'])
-plt.title("Total return")
-plt.show()
-
-plt.plot(moving_average(run1_errors), 'b', moving_average(run2_errors), 'r', moving_average(run3_errors), 'g', moving_average(run4_errors), 'c')
-plt.legend(['base model 1', 'base model 2', 'base model 3', 'base model 4'])
-plt.title("Total error")
-plt.show()
+# =============================================================================
+# run2_returns, run2_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=2,basemodel="um2")
+# run3_returns, run3_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=3,basemodel="um3")
+# run4_returns, run4_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=4,basemodel="um4")
+# 
+# =============================================================================
+# =============================================================================
+# plt.plot(moving_average(run1_returns), 'b', moving_average(run2_returns), 'r', moving_average(run3_returns), 'g', moving_average(run4_returns), 'c')
+# plt.legend(['base model 1', 'base model 2', 'base model 3','base model 4'])
+# plt.title("Total return")
+# plt.show()
+# 
+# plt.plot(moving_average(run1_errors), 'b', moving_average(run2_errors), 'r', moving_average(run3_errors), 'g', moving_average(run4_errors), 'c')
+# plt.legend(['base model 1', 'base model 2', 'base model 3', 'base model 4'])
+# plt.title("Total error")
+# plt.show()
+# 
+# =============================================================================

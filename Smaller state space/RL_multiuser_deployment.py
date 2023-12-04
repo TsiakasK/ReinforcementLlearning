@@ -217,7 +217,7 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
     # get state-action space
     states, actions = state_action_space()
     # exploring starts, both with and without pain
-    start_pain =0
+    start_pain =1
     start_state = [0, start_pain, 0, 0, 0]
     #start_state = [0, 1, 0, 0, 0]
 
@@ -369,19 +369,36 @@ num_int = 180
 eg_param=0.1
 num_eps= 1
 
-run1_returns, run1_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=1,basemodel=bm)
-run2_returns, run2_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=2,basemodel=bm)
-run3_returns, run3_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=3,basemodel=bm)
-run4_returns, run4_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=4,basemodel=bm)
+# =============================================================================
+# run1_returns, run1_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=1,basemodel=bm)
+# run2_returns, run2_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=2,basemodel=bm)
+# run3_returns, run3_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=3,basemodel=bm)
+# run4_returns, run4_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=4,basemodel=bm)
+# 
+# plt.plot(moving_average(run1_returns), 'b', moving_average(run2_returns), 'r', moving_average(run3_returns), 'g', moving_average(run4_returns), 'c')
+# plt.legend(['user model 1', 'user model 2', 'user model 3','user model 4'])
+# plt.title("Total return")
+# plt.show()
+# 
+# plt.plot(moving_average(run1_errors), 'b', moving_average(run2_errors), 'r', moving_average(run3_errors), 'g', moving_average(run4_errors), 'c')
+# plt.legend(['user model 1', 'user model 2', 'user model 3', 'user model 4'])
+# plt.title("Total error")
+# plt.show()
+# 
+# =============================================================================
+
+run1_returns, run1_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um1")
+run2_returns, run2_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um2")
+run3_returns, run3_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um3")
+run4_returns, run4_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um4")
 
 plt.plot(moving_average(run1_returns), 'b', moving_average(run2_returns), 'r', moving_average(run3_returns), 'g', moving_average(run4_returns), 'c')
-plt.legend(['user model 1', 'user model 2', 'user model 3','user model 4'])
+plt.legend(['base model 1', 'base model 2', 'base model 3','base model 4'])
 plt.title("Total return")
 plt.show()
 
 plt.plot(moving_average(run1_errors), 'b', moving_average(run2_errors), 'r', moving_average(run3_errors), 'g', moving_average(run4_errors), 'c')
-plt.legend(['user model 1', 'user model 2', 'user model 3', 'user model 4'])
+plt.legend(['base model 1', 'base model 2', 'base model 3', 'base model 4'])
 plt.title("Total error")
 plt.show()
-
 
