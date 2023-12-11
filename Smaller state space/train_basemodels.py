@@ -107,7 +107,7 @@ def get_next_state(state, states, action, previous_action, user_model):
         score += 2
     # ensures that the robot still does some switches in behaviour
     elif (action == previous_action and interaction == 0 ):
-        score -= 5
+        score -= 2
                
     else:
         score = 0
@@ -310,25 +310,23 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
         returns.append(r)
         errors.append(error)
     # print(Q)
-# =============================================================================
-#     if user_model == 1:
-#         with open('q_table_um1_np.py', 'w', newline='') as f:
-#             writer = csv.writer(f, delimiter=' ')
-#             writer.writerows(Q)
-#     if user_model ==2:
-#          with open('q_table_um2_np.py', 'w', newline='') as f:
-#              writer = csv.writer(f,delimiter=' ')
-#              writer.writerows(Q)
-#     if user_model ==3:
-#          with open('q_table_um3_np.py', 'w', newline='') as f:
-#              writer = csv.writer(f,delimiter=' ')
-#              writer.writerows(Q)
-#     if user_model ==4:
-#          with open('q_table_um4_np.py', 'w', newline='') as f:
-#              writer = csv.writer(f,delimiter=' ')
-#              writer.writerows(Q)
-# 
-# =============================================================================
+    if user_model == 1:
+        with open('q_table_um1_np.py', 'w', newline='') as f:
+            writer = csv.writer(f, delimiter=' ')
+            writer.writerows(Q)
+    if user_model ==2:
+         with open('q_table_um2_np.py', 'w', newline='') as f:
+             writer = csv.writer(f,delimiter=' ')
+             writer.writerows(Q)
+    if user_model ==3:
+         with open('q_table_um3_np.py', 'w', newline='') as f:
+             writer = csv.writer(f,delimiter=' ')
+             writer.writerows(Q)
+    if user_model ==4:
+         with open('q_table_um4_np.py', 'w', newline='') as f:
+             writer = csv.writer(f,delimiter=' ')
+             writer.writerows(Q)
+
 
     return returns, errors
 
@@ -339,10 +337,10 @@ def moving_average(a, n=20):
     return ret[n - 1:] / n
 
 
-run1_returns, run1_errors = simulate(ALPHA=0.25, GAMMA=0.9, num_interactions= 180, egreedy_param=0.97, num_episodes=500, user_model=1)
-run2_returns, run2_errors = simulate(ALPHA=0.25, GAMMA=0.9, num_interactions= 180, egreedy_param=0.97, num_episodes=500, user_model=2)
-run3_returns, run3_errors = simulate(ALPHA=0.25, GAMMA=0.9, num_interactions= 180, egreedy_param=0.97, num_episodes=500, user_model=3)
-run4_returns, run4_errors = simulate(ALPHA=0.25, GAMMA=0.9, num_interactions= 180, egreedy_param=0.97, num_episodes=500, user_model=4)
+run1_returns, run1_errors = simulate(ALPHA=0.25, GAMMA=0.9, num_interactions= 180, egreedy_param=0.95, num_episodes=500, user_model=1)
+run2_returns, run2_errors = simulate(ALPHA=0.25, GAMMA=0.9, num_interactions= 180, egreedy_param=0.95, num_episodes=500, user_model=2)
+run3_returns, run3_errors = simulate(ALPHA=0.25, GAMMA=0.9, num_interactions= 180, egreedy_param=0.95, num_episodes=500, user_model=3)
+run4_returns, run4_errors = simulate(ALPHA=0.25, GAMMA=0.9, num_interactions= 180, egreedy_param=0.95, num_episodes=500, user_model=4)
 
 
 plt.plot(moving_average(run1_returns), 'b', moving_average(run2_returns), 'r', moving_average(run3_returns), 'g', moving_average(run4_returns), 'c')

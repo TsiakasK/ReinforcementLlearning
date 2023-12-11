@@ -14,7 +14,7 @@ import random as rnd
 import itertools
 import matplotlib.pyplot as plt
 import csv
-from extended_user_model import *
+from extended_user_model_np import *
 
 
 def maxs(seq):
@@ -45,13 +45,12 @@ def cdf(seq):
 def state_action_space():
     # 0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry
     current_action = [0, 1, 2, 3, 4, 5]
-    pain_presence = [0, 1]  # 0: no pain, 1: pain
-
+    #pain_presence = [0, 1]  # 0: no pain, 1: pain
     # 0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry
     previous_action = [0, 1, 2, 3, 4, 5]
     # 0: no user_interaction, 1: any user_interaction (petting, clapping, shaking)
     previous_success = [0, 1]
-    combs = (current_action, pain_presence,
+    combs = (current_action,
              previous_action, previous_success)
     states = list(itertools.product(*combs))
 
@@ -62,14 +61,12 @@ def state_action_space():
     actions = [0, 1, 2, 3, 4, 5]
     return states, actions
 
-
 def get_next_state(state, states, action, previous_action, user_model):
     '''
     STATE SPACE
     state[0]: current action {0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry}
-    state[1]: pain presence {0,1}
-    state[2]: previous action {0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry}
-    state[3]: previous succes 0: no user_interaction, 1: any user_interaction (petting, clapping, shaking)
+    state[1]: previous action {0: neutral/none, 1: content, 2: happy, 3: surprised, 4: sad, 5: angry}
+    state[2]: previous succes 0: no user_interaction, 1: any user_interaction (petting, clapping, shaking)
 
     STATE last 10 seconds
 
@@ -80,16 +77,15 @@ def get_next_state(state, states, action, previous_action, user_model):
 
     next_state = state[:]
     
-    interaction = user_interaction_model2(
-        next_state[1], action, state, user_model, previous_action)
+    interaction = user_interaction_model2(action, state, user_model, previous_action)
     # if there is any user_interaction, set previous succes to 1
     if interaction != 0:
-        next_state[3] = 1
+        next_state[2] = 1
     else:
-        next_state[3] = 0
+        next_state[2] = 0
     next_state[0] = action
     #next_state[1] = pain_model(action, state, user_model)
-    next_state[2] = previous_action
+    next_state[1] = previous_action
 
 # REWARDS
 # TODO change reward signal to discourage switching to often between behaviours, look at s, s' and a
@@ -104,15 +100,13 @@ def get_next_state(state, states, action, previous_action, user_model):
         score += 2
     # ensures that the robot still does some switches in behaviour
     elif (action == previous_action and interaction == 0 ):
-        score -= 5
+        score -= 2
                
     else:
         score = 0
 
     reward = score
     return reward, next_state
-
-# define the MDP
 
 
 class MDP:
@@ -217,8 +211,7 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
     # get state-action space
     states, actions = state_action_space()
     # exploring starts, both with and without pain
-    start_pain =1
-    start_state = [0, start_pain, 0, 0, 0]
+    start_state = [0,  0, 0, 0]
     #start_state = [0, 1, 0, 0, 0]
 
     m = MDP(start_state, actions)
@@ -237,25 +230,16 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
     if q:
         match basemodel:
             case "um1":
-                if start_pain==0:
-                    ins = open("q_table_um1_np.py", 'r') 
-                else:
-                    ins = open("q_table_um1_p.py", 'r')
+                ins = open("q_table_um1_np.py", 'r') 
+
             case "um2":
-                if start_pain==0:
-                    ins = open("q_table_um2_np.py", 'r') 
-                else:
-                    ins = open("q_table_um2_p.py", 'r')
+                ins = open("q_table_um2_np.py", 'r') 
+      
             case "um3":
-                if start_pain==0:
-                    ins = open("q_table_um3_np.py", 'r') 
-                else:
-                    ins = open("q_table_um3_p.py", 'r')
+                ins = open("q_table_um3_np.py", 'r') 
+
             case "um4":
-                if start_pain==0:
-                    ins = open("q_table_um4_np.py", 'r') 
-                else:
-                    ins = open("q_table_um4_p.py", 'r')
+                ins = open("q_table_um4_np.py", 'r') 
         
         Q = [[float(n) for n in line.split()] for line in ins]
         ins.close()
@@ -284,7 +268,7 @@ def simulate(ALPHA, GAMMA, num_interactions, egreedy_param, num_episodes, user_m
         previous_action = 0  # start with neutral as "last" action
         interaction = 1
         done = 0
-        state = [0, start_pain,  0, 0]
+        state = [0, 0, 0]
         # state = start_state
         if (episode % 1 == 0):
             print("Episode: " + str(episode))
@@ -363,6 +347,7 @@ def moving_average(a, n=10):
     return ret[n - 1:] / n
 
 bm = "um4"
+um= 5
 a=0.5
 g= 0.9
 num_int = 180
@@ -387,18 +372,20 @@ num_eps= 1
 # 
 # =============================================================================
 
-run1_returns, run1_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um1")
-run2_returns, run2_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um2")
-run3_returns, run3_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um3")
-run4_returns, run4_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=5,basemodel="um4")
+run1_returns, run1_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=um,basemodel="um1")
+run2_returns, run2_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=um,basemodel="um2")
+run3_returns, run3_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=um,basemodel="um3")
+run4_returns, run4_errors = simulate(ALPHA=a, GAMMA=g, num_interactions= num_int, egreedy_param= eg_param, num_episodes=num_eps, user_model=um,basemodel="um4")
 
 plt.plot(moving_average(run1_returns), 'b', moving_average(run2_returns), 'r', moving_average(run3_returns), 'g', moving_average(run4_returns), 'c')
 plt.legend(['base model 1', 'base model 2', 'base model 3','base model 4'])
-plt.title("Total return")
+#plt.legend(['run 1', 'run 2', 'run 3','run 4'])
+
+plt.title("Total return user model 5")
 plt.show()
 
 plt.plot(moving_average(run1_errors), 'b', moving_average(run2_errors), 'r', moving_average(run3_errors), 'g', moving_average(run4_errors), 'c')
 plt.legend(['base model 1', 'base model 2', 'base model 3', 'base model 4'])
-plt.title("Total error")
+plt.title("Total error user model 5")
 plt.show()
 
