@@ -412,30 +412,30 @@ print(sum(run5_returns)/len(run5_returns))
 # print([sum(success1)/len(success1), sum(success2)/len(success2), sum(success3)/len(success3), sum(success4)/len(success4)])
 
 plt.plot(moving_average(run1_returns), 'b', moving_average(run2_returns), 'r', moving_average(run3_returns), 'g', moving_average(run4_returns), 'c', moving_average(run5_returns), 'y')
-plt.legend(['BP1', 'BP2', 'BP3','BP4'])
+plt.legend(['BP1', 'BP2', 'BP3','BP4', 'BP5'])
 plt.title("Total return per episode - user model "+str(um))
 plt.show()
 
-plt.bar([1,2,3,4], [sum(run1_returns)/len(run1_returns), sum(run2_returns)/len(run2_returns), sum(run3_returns)/len(run3_returns), sum(run4_returns)/len(run4_returns)])
+plt.bar([1,2,3,4,5], [sum(run1_returns)/len(run1_returns), sum(run2_returns)/len(run2_returns), sum(run3_returns)/len(run3_returns), sum(run4_returns)/len(run4_returns), sum(run5_returns)/len(run5_returns)])
 plt.title("Average total return - user model "+str(um))
 plt.show()
 print("Average total return")
-print([sum(run1_returns)/len(run1_returns), sum(run2_returns)/len(run2_returns), sum(run3_returns)/len(run3_returns), sum(run4_returns)/len(run4_returns)])
+print([sum(run1_returns)/len(run1_returns), sum(run2_returns)/len(run2_returns), sum(run3_returns)/len(run3_returns), sum(run4_returns)/len(run4_returns), sum(run5_returns)/len(run5_returns)])
 
-plt.bar([1,2,3,4],[sum(rewards1)/len(rewards1), sum(rewards2)/len(rewards2), sum(rewards3)/len(rewards3), sum(rewards4)/len(rewards4)])
+plt.bar([1,2,3,4,5],[sum(rewards1)/len(rewards1), sum(rewards2)/len(rewards2), sum(rewards3)/len(rewards3), sum(rewards4)/len(rewards4), sum(rewards5)/len(rewards5)])
 plt.title("Average reward")
 plt.show()
 
 plt.plot(moving_average(success1), 'b', moving_average(success2), 'r', moving_average(success3), 'g', moving_average(success4), 'c', moving_average(success5), 'y')
-plt.legend(['BP1', 'BP2', 'BP3','BP4'])
+plt.legend(['BP1', 'BP2', 'BP3','BP4', 'BP5'])
 plt.title("success rate per episode - user model "+str(um))
 plt.show()
 
-plt.bar([1,2,3,4], [sum(success1)/len(success1), sum(success2)/len(success2), sum(success3)/len(success3), sum(success4)/len(success4)])
+plt.bar([1,2,3,4,5], [sum(success1)/len(success1), sum(success2)/len(success2), sum(success3)/len(success3), sum(success4)/len(success4), sum(success5)/len(success5)])
 plt.title("Average success - user model "+str(um))
 plt.show()
 print("Average success")
-print([sum(success1)/len(success1), sum(success2)/len(success2), sum(success3)/len(success3), sum(success4)/len(success4)])
+print([sum(success1)/len(success1), sum(success2)/len(success2), sum(success3)/len(success3), sum(success4)/len(success4),  sum(success5)/len(success5)])
 
 
 
